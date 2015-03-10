@@ -41,7 +41,7 @@
             android:layout_column="1" />
 
         <TextView
-            android:text="@string/precision"
+            android:text="@string/accuracy"
             android:layout_gravity="end"
             android:layout_marginEnd="@dimen/activity_horizontal_margin" />
 

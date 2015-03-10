@@ -7,7 +7,7 @@
     <!--string name="delete_logs">Delete logs</string-->
     <string name="location">Location</string>
     <string name="latitude_longitude">Lat-/Longitude</string>
-    <string name="precision">Precision</string>
+    <string name="accuracy">Accuracy</string>
     <string name="last_update">Last Update</string>
     <string name="wifi">Wifi</string>
     <string name="ssid_filter">SSID Filter</string>
