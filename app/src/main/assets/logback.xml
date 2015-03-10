@@ -15,7 +15,7 @@
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${LOG_DIR}/${LOG_FILE}.csv</file>
         <encoder>
-            <pattern>%date{ISO8601};%msg%n</pattern>
+            <pattern>%date{yyyy-mm-dd HH:mm:ss.SSS},%msg%n</pattern>
         </encoder>
 
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
