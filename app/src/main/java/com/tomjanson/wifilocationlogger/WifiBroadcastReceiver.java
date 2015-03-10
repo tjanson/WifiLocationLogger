@@ -73,6 +73,7 @@ class WifiBroadcastReceiver extends BroadcastReceiver {
         if (m.logToFile) {
             m.diskLog.info(m.currentLocation.getLatitude()
                  + ";" + m.currentLocation.getLongitude()
+                 + ";" + m.currentLocation.getAltitude()
                  + ";" + m.currentLocation.getAccuracy()
                  + ";" + m.lastLocationUpdateTime.getTime()
                  + ";" + wifi.SSID
