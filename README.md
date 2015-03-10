@@ -7,6 +7,8 @@ This application is *experimental* – do not expect it to work well, or at all.
 Feel free to open an Issue for bug reports or feedback of any kind.
 Pull requests very welcome.
 
+The output format is bound to change often, so please look at [the relevant section of the source code](https://github.com/tjanson/WifiLocationLogger/blob/master/app/src/main/java/com/tomjanson/wifilocationlogger/WifiBroadcastReceiver.java#L72-L84) to figure out the fields’ meanings.
+
 ![screenshot](https://raw.githubusercontent.com/tjanson/WifiLocationLogger/master/other/screenshot.small.png)
 
 ## To-Do
