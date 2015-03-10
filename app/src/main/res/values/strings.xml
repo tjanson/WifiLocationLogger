@@ -1,0 +1,17 @@
+<resources>
+    <string name="app_name">WifiLocationLogger</string>
+
+    <string name="unknown">—</string>
+    <string name="logging_start">Start logging</string>
+    <string name="logging_stop">Pause logging</string>
+    <!--string name="delete_logs">Delete logs</string-->
+    <string name="location">Location</string>
+    <string name="latitude_longitude">Lat-/Longitude</string>
+    <string name="precision">Precision</string>
+    <string name="last_update">Last Update</string>
+    <string name="wifi">Wifi</string>
+    <string name="ssid_filter">SSID Filter</string>
+    <string name="ssid_filter_hint">Wifi SSID filter (Regular Expression)</string>
+    <string name="ssid_filter_default">^Freifunk$</string>
+    <string name="wifis_list">Wifi List</string>
+</resources>

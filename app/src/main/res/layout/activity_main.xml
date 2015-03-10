@@ -1,0 +1,103 @@
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+
+    <GridLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingLeft="@dimen/activity_horizontal_margin"
+        android:paddingRight="@dimen/activity_horizontal_margin"
+        android:paddingTop="@dimen/activity_vertical_margin"
+        android:paddingBottom="@dimen/activity_vertical_margin"
+        android:columnCount="2" >
+
+        <Button
+            android:id="@+id/loggingButton"
+            android:onClick="toggleLogging"
+            android:text="@string/logging_start"
+            android:layout_gravity="center_horizontal" />
+
+        <!--Button
+            android:id="@+id/deleteLogsButton"
+            android:onClick="deleteLogs"
+            android:text="@string/delete_logs"
+            android:layout_column="1"
+            android:layout_gravity="center_horizontal" /-->
+
+        <TextView
+            android:text="@string/location"
+            android:textSize="20sp"
+            android:layout_marginTop="@dimen/activity_horizontal_margin"
+            android:layout_columnSpan="2" />
+
+        <TextView
+            android:text="@string/latitude_longitude"
+            android:layout_gravity="end"
+            android:layout_marginEnd="@dimen/activity_horizontal_margin" />
+
+        <TextView
+            android:id="@+id/locationTextView"
+            android:text="@string/unknown"
+            android:layout_column="1" />
+
+        <TextView
+            android:text="@string/precision"
+            android:layout_gravity="end"
+            android:layout_marginEnd="@dimen/activity_horizontal_margin" />
+
+        <TextView
+            android:id="@+id/locationAccuracyTextView"
+            android:text="@string/unknown"
+            android:layout_column="1" />
+
+        <TextView
+            android:text="@string/last_update"
+            android:layout_gravity="end"
+            android:layout_marginEnd="@dimen/activity_horizontal_margin" />
+
+        <TextView
+            android:id="@+id/locationUpdateTextView"
+            android:text="@string/unknown"
+            android:layout_column="1" />
+
+        <TextView
+            android:text="@string/wifi"
+            android:textSize="20sp"
+            android:layout_marginTop="@dimen/activity_horizontal_margin"
+            android:layout_columnSpan="2" />
+
+        <TextView
+            android:text="@string/ssid_filter"
+            android:layout_gravity="end"
+            android:layout_marginEnd="@dimen/activity_horizontal_margin"  />
+
+        <EditText
+            android:id="@+id/wifiFilterEditText"
+            android:hint="@string/ssid_filter_hint"
+            android:text="@string/ssid_filter_default"
+            android:layout_column="1" />
+
+        <TextView
+            android:text="@string/last_update"
+            android:layout_gravity="end"
+            android:layout_marginEnd="@dimen/activity_horizontal_margin"  />
+
+        <TextView
+            android:id="@+id/wifiUpdateTextView"
+            android:text="@string/unknown"
+            android:layout_column="1" />
+
+        <TextView
+            android:text="@string/wifis_list"
+            android:textSize="20sp"
+            android:layout_marginTop="@dimen/activity_vertical_margin"
+            android:layout_columnSpan="2" />
+
+        <TextView
+            android:id="@+id/wifiTextView"
+            android:text="@string/unknown"
+            android:layout_columnSpan="2" />
+
+    </GridLayout>
+
+</ScrollView>

@@ -1,0 +1,52 @@
+<!--suppress XmlUnboundNsPrefix -->
+<configuration debug="true">
+    <property name="LOG_DIR" value="/sdcard/WifiLocationLogger" />
+    <property name="LOG_FILE" value="wifilog" />
+
+    <appender name="LOGCAT" class="ch.qos.logback.classic.android.LogcatAppender" >
+        <tagEncoder>
+            <pattern>%logger{0}</pattern>
+        </tagEncoder>
+        <encoder>
+            <pattern>[ %thread ] %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_DIR}/${LOG_FILE}.csv</file>
+        <encoder>
+            <pattern>%date{ISO8601};%msg%n</pattern>
+        </encoder>
+
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!-- daily rollover period -->
+            <fileNamePattern>${LOG_DIR}/${LOGFILE}.%d.csv</fileNamePattern>
+        </rollingPolicy>
+    </appender>
+
+    <appender name="FILE_DEBUG" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_DIR}/${LOG_FILE}.debug.txt</file>
+        <encoder>
+            <pattern>%date{ISO8601} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!-- daily rollover period -->
+            <fileNamePattern>${LOG_DIR}/${LOGFILE}.%d.debug.txt</fileNamePattern>
+            <!-- keep 7 days' worth of history -->
+            <maxHistory>7</maxHistory>
+        </rollingPolicy>
+    </appender>
+
+    <logger name="com.tomjanson.wifilocationlogger" level="TRACE" >
+        <appender-ref ref="LOGCAT" />
+    </logger>
+
+    <logger name="com.tomjanson.wifilocationlogger" level="DEBUG" >
+        <appender-ref ref="FILE_DEBUG" />
+    </logger>
+
+    <logger name="disk" level="INFO" >
+        <appender-ref ref="FILE" />
+    </logger>
+</configuration>
