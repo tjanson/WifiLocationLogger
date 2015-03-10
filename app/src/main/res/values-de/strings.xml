@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Wifi Location Logger</string>
+    <string name="accuracy">Genauigkeit</string>
+    <string name="last_update">Letzte Aktualisierung</string>
+    <string name="latitude_longitude">Breiten-/Längengrad</string>
+    <string name="location">Position</string>
+    <string name="logging_start">Log starten</string>
+    <string name="logging_stop">Log stoppen</string>
+    <string name="ssid_filter">SSID-Filter</string>
+    <string name="ssid_filter_hint">regulärer Ausdruck</string>
+    <string name="wifi">WLAN</string>
+    <string name="wifis_list">WLAN-Liste</string>
+</resources>

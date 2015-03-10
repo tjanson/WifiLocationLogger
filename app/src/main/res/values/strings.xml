@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">Wifi Location Logger</string>
 
-    <string name="unknown">—</string>
+    <string name="unknown" translatable="false">—</string>
     <string name="logging_start">Start logging</string>
     <string name="logging_stop">Pause logging</string>
     <!--string name="delete_logs">Delete logs</string-->
@@ -11,7 +11,7 @@
     <string name="last_update">Last Update</string>
     <string name="wifi">Wifi</string>
     <string name="ssid_filter">SSID Filter</string>
-    <string name="ssid_filter_hint">Wifi SSID filter (Regular Expression)</string>
-    <string name="ssid_filter_default">^Freifunk$</string>
+    <string name="ssid_filter_hint">regular expression</string>
+    <string name="ssid_filter_default" translatable="false">^Freifunk$</string>
     <string name="wifis_list">Wifi List</string>
 </resources>
