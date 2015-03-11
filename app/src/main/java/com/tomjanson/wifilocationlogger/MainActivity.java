@@ -3,6 +3,7 @@ package com.tomjanson.wifilocationlogger;
 import android.app.Activity;
 import android.content.Context;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
@@ -86,6 +87,8 @@ public class MainActivity extends Activity implements
     String   wifiListString;
     Date     lastWifiScanTime;
 
+    private final static String SSID_FILTER_PREFERENCE_KEY = "ssid-filter-preference-key";
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -98,6 +101,11 @@ public class MainActivity extends Activity implements
 
         assignUiElements();
 
+        // restore saved preferences
+        SharedPreferences sharedPref = this.getPreferences(Context.MODE_PRIVATE);
+        wifiFilterET.setText(sharedPref.getString(SSID_FILTER_PREFERENCE_KEY, getString(R.string.ssid_filter_default)));
+
+        // restore state on Activity recreation
         updateValuesFromBundle(savedInstanceState);
 
         buildGoogleApiClient();
@@ -248,6 +256,11 @@ public class MainActivity extends Activity implements
         if (googleApiClient.isConnected()) {
             googleApiClient.disconnect();
         }
+
+        // save preferences or other persisting stuff
+        SharedPreferences.Editor prefEditor = this.getPreferences(Context.MODE_PRIVATE).edit();
+        prefEditor.putString(SSID_FILTER_PREFERENCE_KEY, wifiFilterET.getText().toString());
+        prefEditor.apply();
     }
 
     /**
