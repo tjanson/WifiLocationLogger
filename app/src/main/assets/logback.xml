@@ -32,7 +32,7 @@
 
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <!-- daily rollover period -->
-            <fileNamePattern>${LOG_DIR}/${LOGFILE}.%d.debug.txt</fileNamePattern>
+            <fileNamePattern>${LOG_DIR}/${LOG_FILE}.%d.debug.txt</fileNamePattern>
             <!-- keep 7 days' worth of history -->
             <maxHistory>7</maxHistory>
         </rollingPolicy>
