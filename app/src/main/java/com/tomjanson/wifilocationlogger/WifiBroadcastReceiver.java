@@ -43,7 +43,7 @@ class WifiBroadcastReceiver extends BroadcastReceiver {
         m.lastWifiScanTime = new Date();
 
         Collections.sort(scanResultList, RSSI_ORDER);
-        m.log.debug("Wifis: {}", scanResultList);
+        m.log.trace("Wifis: {}", scanResultList);
 
         String combined = "";
         Pattern filter = makeFilter();

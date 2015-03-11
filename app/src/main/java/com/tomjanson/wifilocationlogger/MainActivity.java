@@ -92,7 +92,7 @@ public class MainActivity extends Activity implements
 
         log = LoggerFactory.getLogger(MainActivity.class); // for debugging
         diskLog = LoggerFactory.getLogger("disk");         // for machine-readable log
-        log.debug("Started; " + Build.VERSION.RELEASE + ", " + Build.ID + ", " + Build.MODEL);
+        log.info("Started; " + Build.VERSION.RELEASE + ", " + Build.ID + ", " + Build.MODEL);
 
         setContentView(R.layout.activity_main);
 
@@ -209,7 +209,7 @@ public class MainActivity extends Activity implements
 
     @Override
     public void onLocationChanged(Location location) {
-        log.info("Location: {}", location);
+        log.trace("Location: {}", location);
         currentLocation = location;
         lastLocationUpdateTime = new Date();
         updateUI();
