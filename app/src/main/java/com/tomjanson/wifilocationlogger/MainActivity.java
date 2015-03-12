@@ -305,4 +305,15 @@ public class MainActivity extends Activity implements
         }
         super.onSaveInstanceState(savedInstanceState);
     }
+
+    /**
+     * Clears focus from EditText (the SSID filter).
+     * This is needed because EditText grabs focus and opens the keyboard, which is annoying.
+     * See GridLayout's focussing attributes, which prevents ET focus grab at startup.
+     *
+     * https://stackoverflow.com/questions/1555109/stop-edittext-from-gaining-focus-at-activity-startup/
+     */
+    public void removeFocusFromEditText(View view) {
+        wifiFilterET.clearFocus();
+    }
 }
