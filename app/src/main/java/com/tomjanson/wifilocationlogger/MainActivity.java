@@ -7,6 +7,7 @@ import android.content.SharedPreferences;
 import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.PowerManager;
 import android.support.annotation.NonNull;
 import android.view.View;
 import android.widget.Button;
@@ -74,7 +75,10 @@ public class MainActivity extends Activity implements
 
     // toggles logging location+wifi to file
     // debug logs may be created regardless of this
-    boolean logToFile = false;
+    boolean loggingToFile = false;
+
+    // wake-lock to (hopefully) continue logging while screen is off
+    PowerManager.WakeLock wakeLock;
 
     // UI Elements
     Button   loggingButton;
@@ -110,6 +114,9 @@ public class MainActivity extends Activity implements
         // restore state on Activity recreation
         updateValuesFromBundle(savedInstanceState);
 
+        PowerManager powerManager = (PowerManager) getSystemService(POWER_SERVICE);
+        wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "MyWakelockTag");
+
         buildGoogleApiClient();
 
         initWifiScan();
@@ -141,15 +148,28 @@ public class MainActivity extends Activity implements
             wifiTV.setText(wifiListString);
         }
 
-        if (logToFile) {
+        if (loggingToFile) {
             loggingButton.setText(R.string.logging_stop);
         } else {
             loggingButton.setText(R.string.logging_start);
         }
     }
 
+    /**
+     * Toggles logging data points to file and aquires wake-lock to do so while screen is off.
+     */
     public void toggleLogging(View view) {
-        logToFile = !logToFile;
+        loggingToFile = !loggingToFile;
+        log.info((loggingToFile ? "En" : "Dis") + "abled logging to disk");
+
+        if (loggingToFile) {
+            wakeLock.acquire();
+            log.debug("Acquired wake-lock");
+        } else if (wakeLock.isHeld()) {
+            wakeLock.release();
+            log.debug("Released wake-lock");
+        }
+
         updateUI();
     }
 
@@ -244,32 +264,58 @@ public class MainActivity extends Activity implements
         if (googleApiClient.isConnected()) {
             startLocationUpdates();
         }
-        this.registerReceiver(wifiBroadcastReceiver, wifiIntentFilter);
-        log.debug("Registered wifiBroadcastReceiver");
-        wifiManager.startScan();
+
+        if (!loggingToFile) {
+            this.registerReceiver(wifiBroadcastReceiver, wifiIntentFilter);
+            log.trace("Registered WifiBroadcastReceiver");
+            wifiManager.startScan();
+        }
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        this.unregisterReceiver(wifiBroadcastReceiver);
-        log.debug("Unregistered wifiBroadcastReceiver");
-        if (googleApiClient.isConnected()) {
+
+        if (!loggingToFile) {
+            this.unregisterReceiver(wifiBroadcastReceiver);
+            log.debug("Unregistered WifiBroadcastReceiver");
             stopLocationUpdates();
+        } else {
+            log.debug("onPause called, but logging to file; we'll keep going");
         }
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        if (googleApiClient.isConnected()) {
-            googleApiClient.disconnect();
+
+        if (!loggingToFile) {
+            disconnectGoogleApiClient();
         }
 
         // save preferences or other persisting stuff
         SharedPreferences.Editor prefEditor = this.getPreferences(Context.MODE_PRIVATE).edit();
         prefEditor.putString(SSID_FILTER_PREFERENCE_KEY, wifiFilterET.getText().toString());
         prefEditor.apply();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        disconnectGoogleApiClient();
+
+        if (loggingToFile) {
+            this.unregisterReceiver(wifiBroadcastReceiver);
+            log.trace("Unregistered WifiBroadcastReceiver");
+        }
+    }
+
+    private void disconnectGoogleApiClient() {
+        if (googleApiClient.isConnected()) {
+            googleApiClient.disconnect();
+            log.trace("GoogleApiClient disconnected");
+        }
     }
 
     /**

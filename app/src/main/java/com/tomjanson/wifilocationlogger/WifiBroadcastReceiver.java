@@ -70,7 +70,7 @@ class WifiBroadcastReceiver extends BroadcastReceiver {
     }
 
     private void log(ScanResult wifi) {
-        if (m.logToFile) {
+        if (m.loggingToFile) {
             m.diskLog.info(m.currentLocation.getLatitude()
                  + "," + m.currentLocation.getLongitude()
                  + "," + m.currentLocation.getAltitude()
