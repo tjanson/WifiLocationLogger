@@ -41,8 +41,9 @@ public class MainActivity extends Activity implements
         ConnectionCallbacks, OnConnectionFailedListener, LocationListener {
 
     // Logback loggers, see https://github.com/tony19/logback-android
-    Logger log;
-    Logger diskLog;
+    Logger log;     // regular log/debug messages
+    Logger dataLog; // sensor data (geo, wifi) for debugging (verbose)
+    Logger diskLog; // pretty CSV output, i.e., the "product" of this app
 
     // Location update intervals
     // it seems the updates take at least 5s; setting it lower doesn't seem to work
@@ -93,8 +94,9 @@ public class MainActivity extends Activity implements
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        log = LoggerFactory.getLogger(MainActivity.class); // for debugging
-        diskLog = LoggerFactory.getLogger("disk");         // for machine-readable log
+        log = LoggerFactory.getLogger(MainActivity.class);
+        dataLog = LoggerFactory.getLogger("data");
+        diskLog = LoggerFactory.getLogger("disk");
         log.info("Started; " + Build.VERSION.RELEASE + ", " + Build.ID + ", " + Build.MODEL);
 
         setContentView(R.layout.activity_main);
@@ -217,7 +219,7 @@ public class MainActivity extends Activity implements
 
     @Override
     public void onLocationChanged(Location location) {
-        log.trace("Location: {}", location);
+        dataLog.trace("Location: {}", location);
         currentLocation = location;
         lastLocationUpdateTime = new Date();
         updateUI();

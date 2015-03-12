@@ -7,6 +7,7 @@
         <tagEncoder>
             <pattern>%logger{0}</pattern>
         </tagEncoder>
+
         <encoder>
             <pattern>[ %thread ] %msg%n</pattern>
         </encoder>
@@ -14,6 +15,7 @@
 
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${LOG_DIR}/${LOG_FILE}.csv</file>
+
         <encoder>
             <pattern>%date{yyyy-mm-dd HH:mm:ss.SSS},%msg%n</pattern>
         </encoder>
@@ -25,7 +27,12 @@
     </appender>
 
     <appender name="FILE_DEBUG" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>DEBUG</level>
+        </filter>
+
         <file>${LOG_DIR}/${LOG_FILE}.debug.txt</file>
+
         <encoder>
             <pattern>%date{ISO8601} [%thread] %-5level %logger{36} - %msg%n</pattern>
         </encoder>
@@ -38,15 +45,17 @@
         </rollingPolicy>
     </appender>
 
-    <logger name="com.tomjanson.wifilocationlogger" level="TRACE" >
-        <appender-ref ref="LOGCAT" />
+    <!-- additivity="false" ensures these messages are not also logged in root -->
+    <logger name="data" additivity="false" >
+        <!--appender-ref ref="LOGCAT" /-->
     </logger>
 
-    <logger name="com.tomjanson.wifilocationlogger" level="DEBUG" >
-        <appender-ref ref="FILE_DEBUG" />
-    </logger>
-
-    <logger name="disk" level="INFO" >
+    <logger name="disk" level="INFO" additivity="false" >
         <appender-ref ref="FILE" />
     </logger>
+
+    <root level="TRACE" >
+        <appender-ref ref="LOGCAT" />
+        <appender-ref ref="FILE_DEBUG" />
+    </root>
 </configuration>
