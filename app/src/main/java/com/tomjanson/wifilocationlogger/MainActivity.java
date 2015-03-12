@@ -159,11 +159,11 @@ public class MainActivity extends Activity implements
         wifiIntentFilter = new IntentFilter();
         wifiIntentFilter.addAction(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION);
         this.registerReceiver(wifiBroadcastReceiver, wifiIntentFilter);
-        log.debug("Registered wifiBroadcastReceiver");
+        log.debug("Registered WifiBroadcastReceiver");
     }
 
     private void updateValuesFromBundle(Bundle savedInstanceState) {
-        log.debug("Updating values from bundle");
+        log.debug("Updating values from Bundle");
         if (savedInstanceState != null) {
             if (savedInstanceState.keySet().contains(LOCATION_KEY)) {
                 currentLocation = savedInstanceState.getParcelable(LOCATION_KEY);
@@ -211,10 +211,16 @@ public class MainActivity extends Activity implements
         // The final argument to {@code requestLocationUpdates()} is a LocationListener
         // (http://developer.android.com/reference/com/google/android/gms/location/LocationListener.html).
         LocationServices.FusedLocationApi.requestLocationUpdates(googleApiClient, locationRequest, this);
+        log.trace("Requesting GoogleApiClient location updates");
     }
 
     void stopLocationUpdates() {
-        LocationServices.FusedLocationApi.removeLocationUpdates(googleApiClient, this);
+        if (googleApiClient.isConnected()) {
+            LocationServices.FusedLocationApi.removeLocationUpdates(googleApiClient, this);
+            log.trace("Stopped location updates");
+        } else {
+            log.warn("Attempted to stop location updates, but not connected");
+        }
     }
 
     @Override
@@ -229,6 +235,7 @@ public class MainActivity extends Activity implements
     protected void onStart() {
         super.onStart();
         googleApiClient.connect();
+        log.trace("Connecting GoogleApiClient ...");
     }
 
     @Override
@@ -283,12 +290,12 @@ public class MainActivity extends Activity implements
 
     @Override
     public void onConnectionFailed(ConnectionResult result) {
-        log.warn("Connection failed: ConnectionResult.getErrorCode() = {}", result.getErrorCode());
+        log.warn("GoogleApiClient connection failed: ConnectionResult.getErrorCode() = {}", result.getErrorCode());
     }
 
     @Override
     public void onConnectionSuspended(int cause) {
-        log.info("Connection suspended");
+        log.info("GoogleApiClient connection suspended, attempting reconnect");
         googleApiClient.connect();
     }
     /**
