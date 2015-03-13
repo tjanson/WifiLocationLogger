@@ -2,6 +2,9 @@
 <configuration debug="true">
     <property name="LOG_DIR" value="/sdcard/WifiLocationLogger" />
     <property name="LOG_FILE" value="wifilog" />
+    <property name="HOST" value="87.106.17.125" /><!-- niobe.tomjanson.com -->
+    <property name="PORT" value="34567" />
+    <property name="INCLUDECALLERDATA" value="true" />
 
     <appender name="LOGCAT" class="ch.qos.logback.classic.android.LogcatAppender" >
         <tagEncoder>
@@ -45,6 +48,23 @@
         </rollingPolicy>
     </appender>
 
+    <appender name="SOCKET" class="ch.qos.logback.classic.net.SocketAppender">
+        <!-- Async + lazy + see
+             https://github.com/tony19/logback-android/wiki/Appender-Notes#socketappender-syslogappender
+        -->
+
+        <!-- lazy initialization: don't open socket until 1st write -->
+        <lazy>true</lazy>
+
+        <remoteHost>${HOST}</remoteHost>
+        <port>${PORT}</port>
+        <reconnectionDelay>10 seconds</reconnectionDelay>
+        <includeCallerData>${INCLUDECALLERDATA}</includeCallerData>
+    </appender>
+    <appender name="ASYNC" class="ch.qos.logback.classic.AsyncAppender">
+        <appender-ref ref="SOCKET" />
+    </appender>
+
     <!-- additivity="false" ensures these messages are not also logged in root -->
     <logger name="data" additivity="false" >
         <!--appender-ref ref="LOGCAT" /-->
@@ -52,6 +72,10 @@
 
     <logger name="disk" level="INFO" additivity="false" >
         <appender-ref ref="FILE" />
+    </logger>
+
+    <logger name="remote" level="INFO" additivity="false" >
+        <appender-ref ref="ASYNC" />
     </logger>
 
     <root level="TRACE" >

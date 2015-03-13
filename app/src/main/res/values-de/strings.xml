@@ -11,4 +11,6 @@
     <string name="ssid_filter_hint">regulärer Ausdruck</string>
     <string name="wifi">WLAN</string>
     <string name="wifis_list">WLAN-Liste</string>
+    <string name="remote_log">An Server senden</string>
+    <string name="remote_log_warning">Bitte beachte: Die Datenübertragung zum Server erfolgt momentan unverschlüsselt und ist damit potentiell für Dritte lesbar.\nRemote Logging ist in einer frühen Versuchsphase.</string>
 </resources>

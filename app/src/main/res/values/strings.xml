@@ -4,6 +4,8 @@
     <string name="unknown" translatable="false">—</string>
     <string name="logging_start">Start logging</string>
     <string name="logging_stop">Pause logging</string>
+    <string name="remote_log">Send to server</string>
+    <string name="remote_log_warning">Note: The remote logging connection is currently unencrypted. Data may be intercepted by third parties.\nRemote logging is experimental.</string>
     <!--string name="delete_logs">Delete logs</string-->
     <string name="location">Location</string>
     <string name="latitude_longitude">Lat-/Longitude</string>

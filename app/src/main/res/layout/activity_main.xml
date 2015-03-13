@@ -27,6 +27,17 @@
             android:layout_column="1"
             android:layout_gravity="center_horizontal" /-->
 
+        <CheckBox
+            android:id="@+id/remoteLogCheckbox"
+            android:checked="true"
+            android:text="@string/remote_log"
+            android:layout_gravity="center"
+            android:layout_column="1" />
+
+        <TextView
+            android:text="@string/remote_log_warning"
+            android:layout_columnSpan="2" />
+
         <TextView
             android:text="@string/location"
             android:textSize="20sp"

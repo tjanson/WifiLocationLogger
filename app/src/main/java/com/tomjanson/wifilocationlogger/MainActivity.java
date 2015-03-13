@@ -11,6 +11,7 @@ import android.os.PowerManager;
 import android.support.annotation.NonNull;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
 
@@ -26,9 +27,12 @@ import com.google.android.gms.location.LocationServices;
 
 import java.text.DateFormat;
 import java.util.Date;
+import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import ch.qos.logback.classic.LoggerContext;
 
 /*
  * Location update code based on:
@@ -42,9 +46,14 @@ public class MainActivity extends Activity implements
         ConnectionCallbacks, OnConnectionFailedListener, LocationListener {
 
     // Logback loggers, see https://github.com/tony19/logback-android
-    Logger log;     // regular log/debug messages
-    Logger dataLog; // sensor data (geo, wifi) for debugging (verbose)
-    Logger diskLog; // pretty CSV output, i.e., the "product" of this app
+    Logger log;       // regular log/debug messages
+    Logger dataLog;   // sensor data (geo, wifi) for debugging (verbose)
+    Logger diskLog;   // pretty CSV output, i.e., the "product" of this app
+    Logger remoteLog; // sends output to remote server (see logback.xml for server details)
+
+    // unique ID sent to server to distinguish clients
+    // changes everytime logging is enabled
+    static String sessionId;
 
     // Location update intervals
     // it seems the updates take at least 5s; setting it lower doesn't seem to work
@@ -75,13 +84,14 @@ public class MainActivity extends Activity implements
 
     // toggles logging location+wifi to file
     // debug logs may be created regardless of this
-    boolean loggingToFile = false;
+    boolean loggingEnabled = false;
 
     // wake-lock to (hopefully) continue logging while screen is off
     PowerManager.WakeLock wakeLock;
 
     // UI Elements
     Button   loggingButton;
+    CheckBox remoteLogCB;
     TextView locationTV;
     TextView locationAccuracyTV;
     TextView locationUpdateTV;
@@ -101,6 +111,7 @@ public class MainActivity extends Activity implements
         log = LoggerFactory.getLogger(MainActivity.class);
         dataLog = LoggerFactory.getLogger("data");
         diskLog = LoggerFactory.getLogger("disk");
+        remoteLog = LoggerFactory.getLogger("remote");
         log.info("Started; " + Build.VERSION.RELEASE + ", " + Build.ID + ", " + Build.MODEL);
 
         setContentView(R.layout.activity_main);
@@ -125,6 +136,7 @@ public class MainActivity extends Activity implements
 
     private void assignUiElements() {
         loggingButton       = (Button)   findViewById(R.id.loggingButton);
+        remoteLogCB         = (CheckBox) findViewById(R.id.remoteLogCheckbox);
         locationTV          = (TextView) findViewById(R.id.locationTextView);
         locationAccuracyTV  = (TextView) findViewById(R.id.locationAccuracyTextView);
         locationUpdateTV    = (TextView) findViewById(R.id.locationUpdateTextView);
@@ -148,21 +160,21 @@ public class MainActivity extends Activity implements
             wifiTV.setText(wifiListString);
         }
 
-        if (loggingToFile) {
-            loggingButton.setText(R.string.logging_stop);
-        } else {
-            loggingButton.setText(R.string.logging_start);
-        }
+        loggingButton.setText(loggingEnabled ? R.string.logging_stop : R.string.logging_start);
+
+//      remoteLogCB.setChecked(allowRemoteLogging);
     }
 
     /**
      * Toggles logging data points to file and aquires wake-lock to do so while screen is off.
      */
     public void toggleLogging(View view) {
-        loggingToFile = !loggingToFile;
-        log.info((loggingToFile ? "En" : "Dis") + "abled logging to disk");
+        loggingEnabled = !loggingEnabled;
+        log.info((loggingEnabled ? "En" : "Dis") + "abled logging to disk");
 
-        if (loggingToFile) {
+        if (loggingEnabled) {
+            sessionId = UUID.randomUUID().toString();
+            log.info("SessionID for remote logging: " + sessionId);
             wakeLock.acquire();
             log.debug("Acquired wake-lock");
         } else if (wakeLock.isHeld()) {
@@ -172,6 +184,12 @@ public class MainActivity extends Activity implements
 
         updateUI();
     }
+
+//  public void toggleRemoteLogPermission(View view) {
+//      allowRemoteLogging = !allowRemoteLogging;
+//      log.info((allowRemoteLogging ? "En" : "Dis") + "abled remote logging");
+//      updateUI();
+//  }
 
     private void initWifiScan() {
         wifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
@@ -265,7 +283,7 @@ public class MainActivity extends Activity implements
             startLocationUpdates();
         }
 
-        if (!loggingToFile) {
+        if (!loggingEnabled) {
             this.registerReceiver(wifiBroadcastReceiver, wifiIntentFilter);
             log.trace("Registered WifiBroadcastReceiver");
             wifiManager.startScan();
@@ -276,7 +294,7 @@ public class MainActivity extends Activity implements
     protected void onPause() {
         super.onPause();
 
-        if (!loggingToFile) {
+        if (!loggingEnabled) {
             this.unregisterReceiver(wifiBroadcastReceiver);
             log.debug("Unregistered WifiBroadcastReceiver");
             stopLocationUpdates();
@@ -289,7 +307,7 @@ public class MainActivity extends Activity implements
     protected void onStop() {
         super.onStop();
 
-        if (!loggingToFile) {
+        if (!loggingEnabled) {
             disconnectGoogleApiClient();
         }
 
@@ -305,10 +323,14 @@ public class MainActivity extends Activity implements
 
         disconnectGoogleApiClient();
 
-        if (loggingToFile) {
+        if (loggingEnabled) {
             this.unregisterReceiver(wifiBroadcastReceiver);
             log.trace("Unregistered WifiBroadcastReceiver");
         }
+
+        // assume SLF4J is bound to logback-classic in the current environment
+        LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
+        loggerContext.stop();
     }
 
     private void disconnectGoogleApiClient() {

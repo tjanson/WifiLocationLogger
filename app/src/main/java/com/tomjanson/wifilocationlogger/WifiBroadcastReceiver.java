@@ -70,16 +70,22 @@ class WifiBroadcastReceiver extends BroadcastReceiver {
     }
 
     private void log(ScanResult wifi) {
-        if (m.loggingToFile) {
-            m.diskLog.info(m.currentLocation.getLatitude()
-                 + "," + m.currentLocation.getLongitude()
-                 + "," + m.currentLocation.getAltitude()
-                 + "," + m.currentLocation.getAccuracy()
-                 + "," + m.lastLocationUpdateTime.getTime()
-                 + "," + wifi.SSID // TODO: escape commas
-                 + "," + wifi.BSSID
-                 + "," + wifi.level
-                 + "," + m.lastWifiScanTime.getTime());
+        if (m.loggingEnabled) {
+            String csvLine = m.currentLocation.getLatitude()
+                     + "," + m.currentLocation.getLongitude()
+                     + "," + m.currentLocation.getAltitude()
+                     + "," + m.currentLocation.getAccuracy()
+                     + "," + m.lastLocationUpdateTime.getTime()
+                     + "," + wifi.SSID // TODO: escape commas
+                     + "," + wifi.BSSID
+                     + "," + wifi.level
+                     + "," + m.lastWifiScanTime.getTime();
+
+            m.diskLog.info(csvLine);
+
+            if (m.remoteLogCB.isChecked()) {
+                m.remoteLog.info(csvLine + "," + m.sessionId);
+            }
         }
     }
 
