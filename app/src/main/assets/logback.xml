@@ -25,7 +25,7 @@
 
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <!-- daily rollover period -->
-            <fileNamePattern>${LOG_DIR}/${LOGFILE}.%d.csv</fileNamePattern>
+            <fileNamePattern>${LOG_DIR}/${LOG_FILE}.%d.csv</fileNamePattern>
         </rollingPolicy>
     </appender>
 
