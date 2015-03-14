@@ -70,6 +70,7 @@ public class MainActivity extends Activity implements
     private final static String LOCATION_KEY                         = "location-key";
     private final static String LAST_LOCATION_UPDATE_TIME_STRING_KEY = "last-location-update-time-string-key";
     private final static String LAST_WIFI_SCAN_TIME_STRING_KEY       = "last-wifi-scan-time-string-key";
+    private final static String LOGGING_ENABLED_KEY                  = "logging-enabled-key";
 
     // Used to access Fused Location API,
     // see https://developer.android.com/google/play-services/location.html
@@ -211,6 +212,9 @@ public class MainActivity extends Activity implements
             }
             if (savedInstanceState.keySet().contains(LAST_WIFI_SCAN_TIME_STRING_KEY)) {
                 lastWifiScanTime = new Date(savedInstanceState.getLong(LAST_WIFI_SCAN_TIME_STRING_KEY));
+            }
+            if (savedInstanceState.keySet().contains(LOGGING_ENABLED_KEY)) {
+                loggingEnabled = savedInstanceState.getBoolean(LOGGING_ENABLED_KEY);
             }
             updateUI();
         }
@@ -366,6 +370,7 @@ public class MainActivity extends Activity implements
         log.info("GoogleApiClient connection suspended, attempting reconnect");
         googleApiClient.connect();
     }
+
     /**
      * Stores activity data in the Bundle.
      */
@@ -378,6 +383,7 @@ public class MainActivity extends Activity implements
         if (lastWifiScanTime != null) {
             savedInstanceState.putLong(LAST_WIFI_SCAN_TIME_STRING_KEY, lastWifiScanTime.getTime());
         }
+        savedInstanceState.putBoolean(LOGGING_ENABLED_KEY, loggingEnabled);
         super.onSaveInstanceState(savedInstanceState);
     }
 
