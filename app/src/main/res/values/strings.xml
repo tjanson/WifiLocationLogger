@@ -11,7 +11,7 @@
     <string name="wifi">Wifi</string>
     <string name="ssid_filter">SSID Filter</string>
     <string name="ssid_filter_hint">regular expression</string>
-    <string name="ssid_filter_default" translatable="false">{F,f}reifunk</string>
+    <string name="ssid_filter_default" translatable="false">(.*)(F|f)reifunk(.*)</string>
     <string name="wifis_list">Wifi List</string>
     <string name="upload_url_default" translatable="false">http://niobe.tomjanson.com:34570/</string>
     <string name="upload_to_server">Upload to server</string>
