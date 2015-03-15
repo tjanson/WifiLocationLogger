@@ -45,6 +45,25 @@
         </rollingPolicy>
     </appender>
 
+    <appender name="FILE_TRACE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>TRACE</level>
+        </filter>
+
+        <file>${LOG_DIR}/${LOG_FILE}.trace.txt</file>
+
+        <encoder>
+            <pattern>%date{ISO8601} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!-- daily rollover period -->
+            <fileNamePattern>${LOG_DIR}/${LOG_FILE}.%d.trace.txt</fileNamePattern>
+            <!-- keep 7 days' worth of history -->
+            <maxHistory>7</maxHistory>
+        </rollingPolicy>
+    </appender>
+
     <!-- additivity="false" ensures these messages are not also logged in root -->
     <logger name="data" additivity="false" >
         <!--appender-ref ref="LOGCAT" /-->
@@ -56,6 +75,6 @@
 
     <root level="TRACE" >
         <appender-ref ref="LOGCAT" />
-        <appender-ref ref="FILE_DEBUG" />
+        <appender-ref ref="FILE_TRACE" />
     </root>
 </configuration>
