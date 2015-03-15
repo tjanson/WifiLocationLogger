@@ -14,6 +14,6 @@
     <string name="wifi">Wifi</string>
     <string name="ssid_filter">SSID Filter</string>
     <string name="ssid_filter_hint">regular expression</string>
-    <string name="ssid_filter_default" translatable="false">^Freifunk$</string>
+    <string name="ssid_filter_default" translatable="false">^{F,f}reifunk$</string>
     <string name="wifis_list">Wifi List</string>
 </resources>
