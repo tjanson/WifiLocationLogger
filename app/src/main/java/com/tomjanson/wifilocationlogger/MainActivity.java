@@ -111,6 +111,8 @@ public class MainActivity extends Activity implements
     // will be incremented when log format changes
     final static int LOG_FORMAT_VERSION = 1;
 
+    private final static int APP_VERSION = 1;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -118,7 +120,7 @@ public class MainActivity extends Activity implements
         log = LoggerFactory.getLogger(MainActivity.class);
         dataLog = LoggerFactory.getLogger("data");
         diskLog = LoggerFactory.getLogger("disk");
-        log.info("Started; " + Build.VERSION.RELEASE + ", " + Build.ID + ", " + Build.MODEL);
+        log.info("Started; " + APP_VERSION + ", " + Build.VERSION.RELEASE + ", " + Build.ID + ", " + Build.MODEL);
 
         setContentView(R.layout.activity_main);
 
