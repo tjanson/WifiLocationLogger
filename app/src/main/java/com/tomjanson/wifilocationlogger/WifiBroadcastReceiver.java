@@ -53,7 +53,7 @@ class WifiBroadcastReceiver extends BroadcastReceiver {
                 continue;
             }
 
-            combined += wifi.SSID + " [" + wifi.BSSID + "]" + ": " + wifi.level + "\n";
+            combined += convertFrequencyToChannel(wifi.frequency) + " " + wifi.SSID + " [" + wifi.BSSID + "]" + ": " + wifi.level + "\n";
             log(wifi);
         }
 
@@ -79,6 +79,7 @@ class WifiBroadcastReceiver extends BroadcastReceiver {
                      + "," + wifi.SSID // TODO: escape commas
                      + "," + wifi.BSSID
                      + "," + wifi.level
+                     + "," + convertFrequencyToChannel(wifi.frequency)
                      + "," + m.lastWifiScanTime.getTime();
 
             m.diskLog.info(csvLine);
@@ -99,6 +100,16 @@ class WifiBroadcastReceiver extends BroadcastReceiver {
             return Pattern.compile(regexp);
         } catch (PatternSyntaxException ex) {
             return Pattern.compile(".*");
+        }
+    }
+
+    public static int convertFrequencyToChannel(int freq) {
+        if (freq >= 2412 && freq <= 2484) {
+            return (freq - 2412) / 5 + 1;
+        } else if (freq >= 5170 && freq <= 5825) {
+            return (freq - 5170) / 5 + 34;
+        } else {
+            throw new IllegalArgumentException();
         }
     }
 
