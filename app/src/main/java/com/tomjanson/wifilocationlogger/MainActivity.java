@@ -24,6 +24,9 @@ import com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListe
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
+import com.loopj.android.http.AsyncHttpClient;
+import com.loopj.android.http.AsyncHttpResponseHandler;
+import com.loopj.android.http.JsonHttpResponseHandler;
 
 import java.text.DateFormat;
 import java.util.Date;
@@ -49,7 +52,9 @@ public class MainActivity extends Activity implements
     Logger log;       // regular log/debug messages
     Logger dataLog;   // sensor data (geo, wifi) for debugging (verbose)
     Logger diskLog;   // pretty CSV output, i.e., the "product" of this app
-    Logger remoteLog; // sends output to remote server (see logback.xml for server details)
+
+    static final String UPLOAD_URL    = "http://niobe.tomjanson.com:34570/"; // TODO make configurable
+    static final String UPLOAD_SECRET = "sLlx6PaL"; // anti-spam filter on server
 
     // unique ID sent to server to distinguish clients
     // changes everytime logging is enabled
@@ -92,7 +97,6 @@ public class MainActivity extends Activity implements
 
     // UI Elements
     Button   loggingButton;
-    CheckBox remoteLogCB;
     TextView locationTV;
     TextView locationAccuracyTV;
     TextView locationUpdateTV;
@@ -112,7 +116,6 @@ public class MainActivity extends Activity implements
         log = LoggerFactory.getLogger(MainActivity.class);
         dataLog = LoggerFactory.getLogger("data");
         diskLog = LoggerFactory.getLogger("disk");
-        remoteLog = LoggerFactory.getLogger("remote");
         log.info("Started; " + Build.VERSION.RELEASE + ", " + Build.ID + ", " + Build.MODEL);
 
         setContentView(R.layout.activity_main);
@@ -137,7 +140,6 @@ public class MainActivity extends Activity implements
 
     private void assignUiElements() {
         loggingButton       = (Button)   findViewById(R.id.loggingButton);
-        remoteLogCB         = (CheckBox) findViewById(R.id.remoteLogCheckbox);
         locationTV          = (TextView) findViewById(R.id.locationTextView);
         locationAccuracyTV  = (TextView) findViewById(R.id.locationAccuracyTextView);
         locationUpdateTV    = (TextView) findViewById(R.id.locationUpdateTextView);
@@ -163,7 +165,6 @@ public class MainActivity extends Activity implements
 
         loggingButton.setText(loggingEnabled ? R.string.logging_stop : R.string.logging_start);
 
-//      remoteLogCB.setChecked(allowRemoteLogging);
     }
 
     /**
@@ -185,12 +186,6 @@ public class MainActivity extends Activity implements
 
         updateUI();
     }
-
-//  public void toggleRemoteLogPermission(View view) {
-//      allowRemoteLogging = !allowRemoteLogging;
-//      log.info((allowRemoteLogging ? "En" : "Dis") + "abled remote logging");
-//      updateUI();
-//  }
 
     private void initWifiScan() {
         wifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
@@ -396,5 +391,9 @@ public class MainActivity extends Activity implements
      */
     public void removeFocusFromEditText(View view) {
         wifiFilterET.clearFocus();
+    }
+
+    public void triggerUpload(View view) {
+        Uploader.upload(this, "/sdcard/WifiLocationLogger/wifilog.csv");
     }
 }

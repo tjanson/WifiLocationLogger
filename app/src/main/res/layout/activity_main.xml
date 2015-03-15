@@ -27,7 +27,7 @@
             android:layout_column="1"
             android:layout_gravity="center_horizontal" /-->
 
-        <CheckBox
+        <!--CheckBox
             android:id="@+id/remoteLogCheckbox"
             android:checked="true"
             android:text="@string/remote_log"
@@ -36,6 +36,17 @@
 
         <TextView
             android:text="@string/remote_log_warning"
+            android:layout_columnSpan="2" /-->
+
+        <Button
+            android:id="@+id/uploadButton"
+            android:onClick="triggerUpload"
+            android:text="@string/upload_to_server"
+            android:layout_gravity="center_horizontal" />
+
+        <TextView
+            android:layout_marginTop="@dimen/activity_vertical_margin"
+            android:text="@string/upload_explanation"
             android:layout_columnSpan="2" />
 
         <TextView
@@ -47,7 +58,8 @@
         <TextView
             android:text="@string/latitude_longitude"
             android:layout_gravity="end"
-            android:layout_marginEnd="@dimen/activity_horizontal_margin" />
+            android:layout_marginEnd="@dimen/activity_horizontal_margin"
+            android:layout_marginRight="@dimen/activity_horizontal_margin" />
 
         <TextView
             android:id="@+id/locationTextView"
@@ -57,7 +69,8 @@
         <TextView
             android:text="@string/accuracy"
             android:layout_gravity="end"
-            android:layout_marginEnd="@dimen/activity_horizontal_margin" />
+            android:layout_marginEnd="@dimen/activity_horizontal_margin"
+            android:layout_marginRight="@dimen/activity_horizontal_margin" />
 
         <TextView
             android:id="@+id/locationAccuracyTextView"
@@ -67,7 +80,8 @@
         <TextView
             android:text="@string/last_update"
             android:layout_gravity="end"
-            android:layout_marginEnd="@dimen/activity_horizontal_margin" />
+            android:layout_marginEnd="@dimen/activity_horizontal_margin"
+            android:layout_marginRight="@dimen/activity_horizontal_margin" />
 
         <TextView
             android:id="@+id/locationUpdateTextView"
@@ -83,7 +97,8 @@
         <TextView
             android:text="@string/ssid_filter"
             android:layout_gravity="end"
-            android:layout_marginEnd="@dimen/activity_horizontal_margin"  />
+            android:layout_marginEnd="@dimen/activity_horizontal_margin"
+            android:layout_marginRight="@dimen/activity_horizontal_margin" />
 
         <EditText
             android:id="@+id/wifiFilterEditText"
@@ -94,11 +109,33 @@
         <TextView
             android:text="@string/last_update"
             android:layout_gravity="end"
-            android:layout_marginEnd="@dimen/activity_horizontal_margin"  />
+            android:layout_marginEnd="@dimen/activity_horizontal_margin"
+            android:layout_marginRight="@dimen/activity_horizontal_margin"  />
 
         <TextView
             android:id="@+id/wifiUpdateTextView"
             android:text="@string/unknown"
+            android:layout_column="1" />
+
+        <TextView
+            android:text="Server"
+            android:textSize="20sp"
+            android:layout_marginTop="@dimen/activity_vertical_margin"
+            android:layout_columnSpan="2" />
+
+        <TextView
+            android:text="Server URL"
+            android:layout_gravity="end"
+            android:layout_marginEnd="@dimen/activity_horizontal_margin"
+            android:layout_marginRight="@dimen/activity_horizontal_margin"  />
+
+        <EditText
+            android:id="@+id/uploadServerUrlEditText"
+            android:inputType="textUri"
+            android:hint=""
+            android:text="@string/upload_server_url"
+            android:editable="false"
+            android:textSize="12sp"
             android:layout_column="1" />
 
         <TextView

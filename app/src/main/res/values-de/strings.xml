@@ -13,4 +13,6 @@
     <string name="wifis_list">WLAN-Liste</string>
     <string name="remote_log">An Server senden</string>
     <string name="remote_log_warning">Bitte beachte: Die Datenübertragung zum Server erfolgt momentan unverschlüsselt und ist damit potentiell für Dritte lesbar.\nRemote Logging ist in einer frühen Versuchsphase.</string>
+    <string name="upload_to_server">An Server hochladen</string>
+    <string name="upload_explanation">Der Upload beinhaltet die vollständige aktuelle Logdatei, d.h. alle heute gesammelten Daten.\nWenn Du nur Auszüge des Logs hochladen möchtest, musst du es vor dem Upload manuell bearbeiten.\nÄltere Logs hochzuladen ist (noch) nicht möglich.</string>
 </resources>

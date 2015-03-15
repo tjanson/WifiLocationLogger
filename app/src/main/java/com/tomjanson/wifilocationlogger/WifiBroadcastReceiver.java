@@ -79,14 +79,11 @@ class WifiBroadcastReceiver extends BroadcastReceiver {
                      + "," + wifi.SSID // TODO: escape commas
                      + "," + wifi.BSSID
                      + "," + wifi.level
+                     + "," + m.lastWifiScanTime.getTime()
                      + "," + convertFrequencyToChannel(wifi.frequency)
-                     + "," + m.lastWifiScanTime.getTime();
+                     + "," + MainActivity.sessionId;
 
             m.diskLog.info(csvLine);
-
-            if (m.remoteLogCB.isChecked()) {
-                m.remoteLog.info(csvLine + "," + m.sessionId);
-            }
         }
     }
 

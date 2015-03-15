@@ -16,4 +16,10 @@
     <string name="ssid_filter_hint">regular expression</string>
     <string name="ssid_filter_default" translatable="false">^{F,f}reifunk$</string>
     <string name="wifis_list">Wifi List</string>
+    <string name="upload_server_url" translatable="false">http://niobe.tomjanson.com:34570/</string>
+    <string name="upload_to_server">Upload to server</string>
+    <string name="upload_explanation">Pressing upload will upload the entire current log file, i.e., all data logged today.\nIf you wish to exclude data, you must remove it from the log file before uploading.\nUploading older log files is not yet supported.</string>
+    <string name="upload_file_not_found">FileNotFoundException</string>
+    <string name="upload_successful">Upload successful</string>
+    <string name="upload_failed">Upload failed!</string>
 </resources>
