@@ -21,4 +21,6 @@
     <string name="upload_failed">Error: Upload failed!</string>
     <string name="server">Server</string>
     <string name="server_url">Server URL</string>
+    <string name="warning">Warning</string>
+    <string name="warning_msg_logged">An event of category “WARN” or higher was logged. Please send the debug log to the developer. It is likely that the app is misbehaving.</string>
 </resources>

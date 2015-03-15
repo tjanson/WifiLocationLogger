@@ -1,10 +1,15 @@
 package com.tomjanson.wifilocationlogger;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.location.Location;
+import android.media.Ringtone;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.PowerManager;
@@ -263,6 +268,7 @@ public class MainActivity extends Activity implements
             log.trace("Stopped location updates");
         } else {
             log.warn("Attempted to stop location updates, but not connected");
+            onWarn();
         }
     }
 
@@ -365,6 +371,7 @@ public class MainActivity extends Activity implements
     @Override
     public void onConnectionFailed(ConnectionResult result) {
         log.warn("GoogleApiClient connection failed: ConnectionResult.getErrorCode() = {}", result.getErrorCode());
+        onWarn();
     }
 
     @Override
@@ -403,5 +410,24 @@ public class MainActivity extends Activity implements
 
     public void triggerUpload(View view) {
         Uploader.upload(this, "/sdcard/WifiLocationLogger/wifilog.csv");
+    }
+
+    private void onWarn() {
+        try {
+            Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+            Ringtone r = RingtoneManager.getRingtone(getApplicationContext(), notification);
+            r.play();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        new AlertDialog.Builder(this)
+            .setTitle(getString(R.string.warning))
+            .setMessage(getString(R.string.warning_msg_logged))
+            .setNeutralButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int which) {
+                }
+            })
+            .setIcon(android.R.drawable.ic_dialog_alert)
+            .show();
     }
 }

@@ -18,4 +18,6 @@
     <string name="upload_failed">Fehler: Upload fehlgeschlagen!</string>
     <string name="upload_file_not_found">Fehler: Logdatei wurde nicht gefunden</string>
     <string name="upload_successful">Upload erfolgreich</string>
+    <string name="warning">Achtung</string>
+    <string name="warning_msg_logged">Ein Ereignis der Kategorie „WARN“ oder höher wurde geloggt. Bitte sende das Debug-Log an den Entwickler. Die App verhält sich wahrscheinlich fehlerhaft.</string>
 </resources>
