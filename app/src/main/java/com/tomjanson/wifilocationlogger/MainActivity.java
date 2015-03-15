@@ -11,7 +11,6 @@ import android.os.PowerManager;
 import android.support.annotation.NonNull;
 import android.view.View;
 import android.widget.Button;
-import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
 
@@ -24,9 +23,6 @@ import com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListe
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
-import com.loopj.android.http.AsyncHttpClient;
-import com.loopj.android.http.AsyncHttpResponseHandler;
-import com.loopj.android.http.JsonHttpResponseHandler;
 
 import java.text.DateFormat;
 import java.util.Date;
@@ -53,7 +49,8 @@ public class MainActivity extends Activity implements
     Logger dataLog;   // sensor data (geo, wifi) for debugging (verbose)
     Logger diskLog;   // pretty CSV output, i.e., the "product" of this app
 
-    static final String UPLOAD_SECRET = "sLlx6PaL"; // anti-spam filter on server
+    // anti-spam filter on server
+    static final String UPLOAD_SECRET = "sLlx6PaL";
 
     // unique ID sent to server to distinguish clients
     // changes everytime logging is enabled
@@ -83,16 +80,16 @@ public class MainActivity extends Activity implements
     Location currentLocation;
 
     // Wifi scan stuff
-    static WifiManager           wifiManager;
-    static IntentFilter          wifiIntentFilter;
-    static WifiBroadcastReceiver wifiBroadcastReceiver;
+            static WifiManager           wifiManager;
+    private static IntentFilter          wifiIntentFilter;
+    private static WifiBroadcastReceiver wifiBroadcastReceiver;
 
     // toggles logging location+wifi to file
     // debug logs may be created regardless of this
     boolean loggingEnabled = false;
 
     // wake-lock to (hopefully) continue logging while screen is off
-    PowerManager.WakeLock wakeLock;
+    private PowerManager.WakeLock wakeLock;
 
     // UI Elements
     Button   loggingButton;
@@ -107,8 +104,12 @@ public class MainActivity extends Activity implements
     String   wifiListString;
     Date     lastWifiScanTime;
 
+    // keys for saving user preferences
     private final static String SSID_FILTER_PREFERENCE_KEY = "ssid-filter-preference-key";
     private final static String UPLOAD_URL_PREFERENCE_KEY  = "upload-url-preference-key";
+
+    // will be incremented when log format changes
+    final static int LOG_FORMAT_VERSION = 1;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {

@@ -4,9 +4,6 @@
     <string name="unknown" translatable="false">—</string>
     <string name="logging_start">Start logging</string>
     <string name="logging_stop">Pause logging</string>
-    <string name="remote_log">Send to server</string>
-    <string name="remote_log_warning">Note: The remote logging connection is currently unencrypted. Data may be intercepted by third parties.\nRemote logging is experimental.</string>
-    <!--string name="delete_logs">Delete logs</string-->
     <string name="location">Location</string>
     <string name="latitude_longitude">Lat-/Longitude</string>
     <string name="accuracy">Accuracy</string>
@@ -19,9 +16,9 @@
     <string name="upload_url_default" translatable="false">http://niobe.tomjanson.com:34570/</string>
     <string name="upload_to_server">Upload to server</string>
     <string name="upload_explanation">Pressing upload will upload the entire current log file, i.e., all data logged today.\nIf you wish to exclude data, you must remove it from the log file before uploading.\nUploading older log files is not yet supported.</string>
-    <string name="upload_file_not_found">FileNotFoundException</string>
+    <string name="upload_file_not_found">Error: Log file was not found!</string>
     <string name="upload_successful">Upload successful</string>
-    <string name="upload_failed">Upload failed!</string>
+    <string name="upload_failed">Error: Upload failed!</string>
     <string name="server">Server</string>
     <string name="server_url">Server URL</string>
 </resources>

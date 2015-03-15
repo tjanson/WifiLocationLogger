@@ -12,8 +12,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.UUID;
 
-public class Uploader {
-    private static AsyncHttpClient client = new AsyncHttpClient();
+class Uploader {
+    private static final AsyncHttpClient client = new AsyncHttpClient();
 
     private static void get(String url, RequestParams params, AsyncHttpResponseHandler responseHandler) {
         client.get(url, params, responseHandler);
@@ -26,7 +26,7 @@ public class Uploader {
     public static void upload(final MainActivity m, String pathToFile) {
         File file = new File(pathToFile);
         UUID uploadUuid = UUID.randomUUID();
-        String targetFilename = m.UPLOAD_SECRET + "." + uploadUuid.toString();
+        String targetFilename = MainActivity.UPLOAD_SECRET + "." + uploadUuid.toString();
         m.log.info("Upload UUID: {}", uploadUuid);
 
         RequestParams params = new RequestParams();
