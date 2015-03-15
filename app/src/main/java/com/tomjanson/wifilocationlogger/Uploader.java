@@ -13,16 +13,14 @@ import java.io.FileNotFoundException;
 import java.util.UUID;
 
 public class Uploader {
-    private static final String BASE_URL = MainActivity.UPLOAD_URL;
-
     private static AsyncHttpClient client = new AsyncHttpClient();
 
     private static void get(String url, RequestParams params, AsyncHttpResponseHandler responseHandler) {
-        client.get(getAbsoluteUrl(url), params, responseHandler);
+        client.get(url, params, responseHandler);
     }
 
     private static void post(String url, RequestParams params, AsyncHttpResponseHandler responseHandler) {
-        client.post(getAbsoluteUrl(url), params, responseHandler);
+        client.post(url, params, responseHandler);
     }
 
     public static void upload(final MainActivity m, String pathToFile) {
@@ -39,7 +37,7 @@ public class Uploader {
             m.log.error("FileNotFoundException e = {}", e);
         }
 
-        post("", params, new AsyncHttpResponseHandler() {
+        post(m.uploadUrlET.getText().toString(), params, new AsyncHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
                 Toast.makeText(m, m.getString(R.string.upload_successful), Toast.LENGTH_LONG).show();
@@ -57,9 +55,5 @@ public class Uploader {
                 //m.onUploadFailure(statusCode, headers, responseBody, error);
             }
         });
-    }
-
-    private static String getAbsoluteUrl(String relativeUrl) {
-        return BASE_URL + relativeUrl;
     }
 }

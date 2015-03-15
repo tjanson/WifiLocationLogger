@@ -53,7 +53,6 @@ public class MainActivity extends Activity implements
     Logger dataLog;   // sensor data (geo, wifi) for debugging (verbose)
     Logger diskLog;   // pretty CSV output, i.e., the "product" of this app
 
-    static final String UPLOAD_URL    = "http://niobe.tomjanson.com:34570/"; // TODO make configurable
     static final String UPLOAD_SECRET = "sLlx6PaL"; // anti-spam filter on server
 
     // unique ID sent to server to distinguish clients
@@ -97,6 +96,7 @@ public class MainActivity extends Activity implements
 
     // UI Elements
     Button   loggingButton;
+    EditText uploadUrlET;
     TextView locationTV;
     TextView locationAccuracyTV;
     TextView locationUpdateTV;
@@ -108,6 +108,7 @@ public class MainActivity extends Activity implements
     Date     lastWifiScanTime;
 
     private final static String SSID_FILTER_PREFERENCE_KEY = "ssid-filter-preference-key";
+    private final static String UPLOAD_URL_PREFERENCE_KEY  = "upload-url-preference-key";
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -125,6 +126,7 @@ public class MainActivity extends Activity implements
         // restore saved preferences
         SharedPreferences sharedPref = this.getPreferences(Context.MODE_PRIVATE);
         wifiFilterET.setText(sharedPref.getString(SSID_FILTER_PREFERENCE_KEY, getString(R.string.ssid_filter_default)));
+        uploadUrlET.setText(sharedPref.getString(UPLOAD_URL_PREFERENCE_KEY, getString(R.string.upload_url_default)));
 
         // restore state on Activity recreation
         updateValuesFromBundle(savedInstanceState);
@@ -140,6 +142,7 @@ public class MainActivity extends Activity implements
 
     private void assignUiElements() {
         loggingButton       = (Button)   findViewById(R.id.loggingButton);
+        uploadUrlET         = (EditText) findViewById(R.id.uploadServerUrlEditText);
         locationTV          = (TextView) findViewById(R.id.locationTextView);
         locationAccuracyTV  = (TextView) findViewById(R.id.locationAccuracyTextView);
         locationUpdateTV    = (TextView) findViewById(R.id.locationUpdateTextView);
@@ -313,6 +316,7 @@ public class MainActivity extends Activity implements
         // save preferences or other persisting stuff
         SharedPreferences.Editor prefEditor = this.getPreferences(Context.MODE_PRIVATE).edit();
         prefEditor.putString(SSID_FILTER_PREFERENCE_KEY, wifiFilterET.getText().toString());
+        prefEditor.putString(UPLOAD_URL_PREFERENCE_KEY, uploadUrlET.getText().toString());
         prefEditor.apply();
     }
 
@@ -391,6 +395,7 @@ public class MainActivity extends Activity implements
      */
     public void removeFocusFromEditText(View view) {
         wifiFilterET.clearFocus();
+        uploadUrlET.clearFocus();
     }
 
     public void triggerUpload(View view) {

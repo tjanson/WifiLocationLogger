@@ -118,13 +118,13 @@
             android:layout_column="1" />
 
         <TextView
-            android:text="Server"
+            android:text="@string/server"
             android:textSize="20sp"
             android:layout_marginTop="@dimen/activity_vertical_margin"
             android:layout_columnSpan="2" />
 
         <TextView
-            android:text="Server URL"
+            android:text="@string/server_url"
             android:layout_gravity="end"
             android:layout_marginEnd="@dimen/activity_horizontal_margin"
             android:layout_marginRight="@dimen/activity_horizontal_margin"  />
@@ -132,9 +132,8 @@
         <EditText
             android:id="@+id/uploadServerUrlEditText"
             android:inputType="textUri"
-            android:hint=""
-            android:text="@string/upload_server_url"
-            android:editable="false"
+            android:hint="@string/upload_url_default"
+            android:text="@string/upload_url_default"
             android:textSize="12sp"
             android:layout_column="1" />
 
