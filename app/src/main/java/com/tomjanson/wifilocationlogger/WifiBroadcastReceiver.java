@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.net.wifi.ScanResult;
+import android.os.Build;
 
 import java.util.Collections;
 import java.util.Comparator;
@@ -32,6 +33,9 @@ class WifiBroadcastReceiver extends BroadcastReceiver {
     private static final String WIFI_SCAN_TIMER = "wifi-scan-timer";
     private static Timer wifiScanTimer;
 
+    private static final int NOT_SPECIAL = 0;
+    private static final int SPECIAL_NO_VISIBLE_WIFI = 1;
+
     public WifiBroadcastReceiver(MainActivity m) {
         this.m = m;
         wifiScanTimer = new Timer(WIFI_SCAN_TIMER);
@@ -48,13 +52,21 @@ class WifiBroadcastReceiver extends BroadcastReceiver {
         String combined = "";
         Pattern filter = makeFilter();
 
+        Boolean atLeastOneLogged = false;
         for (ScanResult wifi : scanResultList) {
             if (!filter.matcher(wifi.SSID).matches()) {
                 continue;
             }
+            atLeastOneLogged = true;
 
             combined += convertFrequencyToChannel(wifi.frequency) + " " + wifi.SSID + " [" + wifi.BSSID + "]" + ": " + wifi.level + "\n";
-            log(wifi);
+            log(wifi, NOT_SPECIAL);
+        }
+
+        // if no log entry was triggered (i.e., no wifis that matched the filter),
+        // write special entry signifying that no wifi was in range
+        if (!atLeastOneLogged) {
+           log(null, SPECIAL_NO_VISIBLE_WIFI);
         }
 
         m.wifiListString = combined;
@@ -69,19 +81,34 @@ class WifiBroadcastReceiver extends BroadcastReceiver {
             }, MainActivity.WIFI_SCAN_DELAY_MILLIS);
     }
 
-    private void log(ScanResult wifi) {
+    private void log(ScanResult wifi, int specialCode) {
         if (m.loggingEnabled) {
-            String csvLine = m.currentLocation.getLatitude()
-                     + "," + m.currentLocation.getLongitude()
-                     + "," + m.currentLocation.getAltitude()
-                     + "," + m.currentLocation.getAccuracy()
-                     + "," + m.lastLocationUpdateTime.getTime()
-                     + "," + wifi.SSID // TODO: escape commas
-                     + "," + wifi.BSSID
-                     + "," + wifi.level
-                     + "," + m.lastWifiScanTime.getTime()
-                     + "," + convertFrequencyToChannel(wifi.frequency)
-                     + "," + MainActivity.sessionId;
+            String csvLine =     MainActivity.LOG_FORMAT_VERSION
+                         + "," + Build.MODEL
+                         + "," + MainActivity.sessionId
+                         + "," + m.currentLocation.getLatitude()
+                         + "," + m.currentLocation.getLongitude()
+                         + "," + m.currentLocation.getAltitude()
+                         + "," + m.currentLocation.getAccuracy()
+                         + "," + m.currentLocation.getSpeed()
+                         + "," + specialCode
+                         + "," + (m.lastLocationUpdateTime.getTime() - m.lastWifiScanTime.getTime());
+
+            if (specialCode == NOT_SPECIAL) {
+                csvLine += "," + wifi.SSID // FIXME: escape commas
+                         + "," + wifi.BSSID
+                         + "," + wifi.level
+                         + "," + convertFrequencyToChannel(wifi.frequency);
+            } else if (specialCode == SPECIAL_NO_VISIBLE_WIFI) {
+                csvLine += ",,,,";
+            } else {
+                throw new IllegalArgumentException(Integer.toString(specialCode));
+            }
+
+            // FIXME last in case it might contain messed up characters
+            // this really needs to be escaped properly, same for SSID above
+            // (which can apparently contain arbitrary characters - dear god...)
+            csvLine +=     "," + "'" + m.wifiFilterET.getText().toString() + "'";
 
             m.diskLog.info(csvLine);
         }
