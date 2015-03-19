@@ -58,7 +58,7 @@ public class MainActivity extends Activity implements
     static final String UPLOAD_SECRET = "sLlx6PaL";
 
     // unique ID sent to server to distinguish clients
-    // changes everytime logging is enabled
+    // changes every time logging is enabled
     static String sessionId;
 
     // Location update intervals
@@ -199,6 +199,7 @@ public class MainActivity extends Activity implements
     }
 
     private void initWifiScan() {
+        log.trace("initWifi");
         wifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
         wifiBroadcastReceiver = new WifiBroadcastReceiver(this);
         wifiIntentFilter = new IntentFilter();
@@ -283,6 +284,7 @@ public class MainActivity extends Activity implements
     @Override
     protected void onStart() {
         super.onStart();
+        log.trace("onStart");
         googleApiClient.connect();
         log.trace("Connecting GoogleApiClient ...");
     }
@@ -290,6 +292,7 @@ public class MainActivity extends Activity implements
     @Override
     protected void onResume() {
         super.onResume();
+        log.trace("onResume");
         if (googleApiClient.isConnected()) {
             startLocationUpdates();
         }
@@ -304,6 +307,7 @@ public class MainActivity extends Activity implements
     @Override
     protected void onPause() {
         super.onPause();
+        log.trace("onPause");
 
         if (!loggingEnabled) {
             this.unregisterReceiver(wifiBroadcastReceiver);
@@ -317,6 +321,7 @@ public class MainActivity extends Activity implements
     @Override
     protected void onStop() {
         super.onStop();
+        log.trace("onStop");
 
         if (!loggingEnabled) {
             disconnectGoogleApiClient();
@@ -332,6 +337,7 @@ public class MainActivity extends Activity implements
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        log.trace("onDestroy");
 
         disconnectGoogleApiClient();
 
