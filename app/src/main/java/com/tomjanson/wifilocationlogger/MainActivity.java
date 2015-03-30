@@ -2,39 +2,28 @@ package com.tomjanson.wifilocationlogger;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.IntentFilter;
+import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.SharedPreferences;
-import android.location.Location;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.PowerManager;
-import android.support.annotation.NonNull;
+import android.os.IBinder;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import android.net.wifi.WifiManager;
-
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.GoogleApiClient.ConnectionCallbacks;
-import com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListener;
-import com.google.android.gms.location.LocationListener;
-import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationServices;
-
-import java.text.DateFormat;
-import java.util.Date;
-import java.util.UUID;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.text.DateFormat;
+import java.util.UUID;
 
 import ch.qos.logback.classic.LoggerContext;
 
@@ -46,13 +35,10 @@ import ch.qos.logback.classic.LoggerContext;
  *     https://github.com/Skarbo/WifiMapper
  */
 
-public class MainActivity extends Activity implements
-        ConnectionCallbacks, OnConnectionFailedListener, LocationListener {
+public class MainActivity extends Activity implements LoggingService.Callbacks{
 
     // Logback loggers, see https://github.com/tony19/logback-android
     Logger log;       // regular log/debug messages
-    Logger dataLog;   // sensor data (geo, wifi) for debugging (verbose)
-    Logger diskLog;   // pretty CSV output, i.e., the "product" of this app
 
     // anti-spam filter on server
     static final String UPLOAD_SECRET = "sLlx6PaL";
@@ -61,70 +47,52 @@ public class MainActivity extends Activity implements
     // changes every time logging is enabled
     static String sessionId;
 
-    // Location update intervals
-    // it seems the updates take at least 5s; setting it lower doesn't seem to work
-    static final long LOCATION_UPDATE_INTERVAL_MILLIS = 3000;
-    static final long FASTEST_LOCATION_UPDATE_INTERVAL_MILLIS = 1000;
-
-    // Wifi scan delay (i.e., wait $delay between completion of scan and start of next scan)
-    static final long WIFI_SCAN_DELAY_MILLIS = 2000;
-
-    // TODO: try different delays
-
-    // Instance state Bundle keys,
-    // see https://developer.android.com/training/basics/activity-lifecycle/recreating.html
-    private final static String LOCATION_KEY                         = "location-key";
-    private final static String LAST_LOCATION_UPDATE_TIME_STRING_KEY = "last-location-update-time-string-key";
-    private final static String LAST_WIFI_SCAN_TIME_STRING_KEY       = "last-wifi-scan-time-string-key";
-    private final static String LOGGING_ENABLED_KEY                  = "logging-enabled-key";
-
-    // Used to access Fused Location API,
-    // see https://developer.android.com/google/play-services/location.html
-    private GoogleApiClient googleApiClient;
-    private LocationRequest locationRequest;
-    Location currentLocation;
-
-    // Wifi scan stuff
-            static WifiManager           wifiManager;
-    private static IntentFilter          wifiIntentFilter;
-    private static WifiBroadcastReceiver wifiBroadcastReceiver;
-
-    // toggles logging location+wifi to file
-    // debug logs may be created regardless of this
-    boolean loggingEnabled = false;
-
-    // wake-lock to (hopefully) continue logging while screen is off
-    private PowerManager.WakeLock wakeLock;
-
     // UI Elements
     Button   loggingButton;
     EditText uploadUrlET;
     TextView locationTV;
     TextView locationAccuracyTV;
     TextView locationUpdateTV;
-    Date     lastLocationUpdateTime;
     TextView wifiTV;
     EditText wifiFilterET;
     TextView wifiUpdateTV;
-    String   wifiListString;
-    Date     lastWifiScanTime;
+    //String   wifiListString;
 
     // keys for saving user preferences
     private final static String SSID_FILTER_PREFERENCE_KEY = "ssid-filter-preference-key";
     private final static String UPLOAD_URL_PREFERENCE_KEY  = "upload-url-preference-key";
 
+    public final static String SSID_FILTER_KEY = "ssid-filter-key";
+
     // will be incremented when log format changes
     final static int LOG_FORMAT_VERSION = 1;
 
-    private final static int APP_VERSION = 1;
+    final static int APP_VERSION = 1;
+
+    private LoggingService loggingService;
+
+    private ServiceConnection mConnection = new ServiceConnection() {
+
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            // After MainActivity was bound to LoggingService, get the LoggingService object
+            LoggingService.MyBinder binder = (LoggingService.MyBinder) service;
+            loggingService = binder.getServiceInstance();
+            loggingService.registerClient((LoggingService.Callbacks) MainActivity.this);
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            loggingService.unregisterClient();
+            loggingService = null;
+        }
+    };
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         log = LoggerFactory.getLogger(MainActivity.class);
-        dataLog = LoggerFactory.getLogger("data");
-        diskLog = LoggerFactory.getLogger("disk");
         log.info("Started; " + APP_VERSION + ", " + Build.VERSION.RELEASE + ", " + Build.ID + ", " + Build.MODEL);
 
         setContentView(R.layout.activity_main);
@@ -136,16 +104,6 @@ public class MainActivity extends Activity implements
         wifiFilterET.setText(sharedPref.getString(SSID_FILTER_PREFERENCE_KEY, getString(R.string.ssid_filter_default)));
         uploadUrlET.setText(sharedPref.getString(UPLOAD_URL_PREFERENCE_KEY, getString(R.string.upload_url_default)));
 
-        // restore state on Activity recreation
-        updateValuesFromBundle(savedInstanceState);
-
-        PowerManager powerManager = (PowerManager) getSystemService(POWER_SERVICE);
-        wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "MyWakelockTag");
-
-        buildGoogleApiClient();
-
-        initWifiScan();
-        wifiManager.startScan();
     }
 
     private void assignUiElements() {
@@ -160,162 +118,77 @@ public class MainActivity extends Activity implements
     }
 
     void updateUI() {
-        if (currentLocation != null) {
-            locationTV.setText(currentLocation.getLatitude() + ", " + currentLocation.getLongitude());
-            locationAccuracyTV.setText(currentLocation.getAccuracy() + " m");
-        }
-        if (lastLocationUpdateTime != null) {
-            locationUpdateTV.setText(DateFormat.getTimeInstance().format(lastLocationUpdateTime));
-        }
-        if (lastWifiScanTime != null) {
-            wifiUpdateTV.setText(DateFormat.getTimeInstance().format(lastWifiScanTime));
-        }
-        if (wifiListString != null) {
-            wifiTV.setText(wifiListString);
-        }
+        if (loggingService != null) {
+            if (loggingService.currentLocation != null) {
+                locationTV.setText(loggingService.currentLocation.getLatitude() + ", " + loggingService.currentLocation.getLongitude());
+                locationAccuracyTV.setText(loggingService.currentLocation.getAccuracy() + " m");
+            }
+            if (loggingService.lastLocationUpdateTime != null) {
+                locationUpdateTV.setText(DateFormat.getTimeInstance().format(loggingService.lastLocationUpdateTime));
+            }
+            if (loggingService.lastWifiScanTime != null) {
+                wifiUpdateTV.setText(DateFormat.getTimeInstance().format(loggingService.lastWifiScanTime));
+            }
+            if (loggingService.wifiListString != null) {
+                wifiTV.setText(loggingService.wifiListString);
+            }
 
-        loggingButton.setText(loggingEnabled ? R.string.logging_stop : R.string.logging_start);
-
+            loggingButton.setText(LoggingService.serviceRunning ? R.string.logging_stop : R.string.logging_start);
+        }
     }
 
     /**
      * Toggles logging data points to file and aquires wake-lock to do so while screen is off.
      */
     public void toggleLogging(View view) {
-        loggingEnabled = !loggingEnabled;
-        log.info((loggingEnabled ? "En" : "Dis") + "abled logging to disk");
 
-        if (loggingEnabled) {
+        if (!LoggingService.serviceRunning) {
             sessionId = UUID.randomUUID().toString();
             log.info("SessionID for remote logging: " + sessionId);
-            wakeLock.acquire();
-            log.debug("Acquired wake-lock");
-        } else if (wakeLock.isHeld()) {
-            wakeLock.release();
-            log.debug("Released wake-lock");
-        }
 
-        updateUI();
-    }
-
-    private void initWifiScan() {
-        log.trace("initWifi");
-        wifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
-        wifiBroadcastReceiver = new WifiBroadcastReceiver(this);
-        wifiIntentFilter = new IntentFilter();
-        wifiIntentFilter.addAction(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION);
-        this.registerReceiver(wifiBroadcastReceiver, wifiIntentFilter);
-        log.debug("Registered WifiBroadcastReceiver");
-    }
-
-    private void updateValuesFromBundle(Bundle savedInstanceState) {
-        log.debug("Updating values from Bundle");
-        if (savedInstanceState != null) {
-            if (savedInstanceState.keySet().contains(LOCATION_KEY)) {
-                currentLocation = savedInstanceState.getParcelable(LOCATION_KEY);
-            }
-            if (savedInstanceState.keySet().contains(LAST_LOCATION_UPDATE_TIME_STRING_KEY)) {
-                lastLocationUpdateTime = new Date(savedInstanceState.getLong(LAST_LOCATION_UPDATE_TIME_STRING_KEY));
-            }
-            if (savedInstanceState.keySet().contains(LAST_WIFI_SCAN_TIME_STRING_KEY)) {
-                lastWifiScanTime = new Date(savedInstanceState.getLong(LAST_WIFI_SCAN_TIME_STRING_KEY));
-            }
-            if (savedInstanceState.keySet().contains(LOGGING_ENABLED_KEY)) {
-                loggingEnabled = savedInstanceState.getBoolean(LOGGING_ENABLED_KEY);
-            }
-            updateUI();
-        }
-    }
-
-    synchronized void buildGoogleApiClient() {
-        log.trace("Building GoogleApiClient");
-        googleApiClient = new GoogleApiClient.Builder(this)
-                .addConnectionCallbacks(this)
-                .addOnConnectionFailedListener(this)
-                .addApi(LocationServices.API)
-                .build();
-        createLocationRequest();
-    }
-
-    void createLocationRequest() {
-        locationRequest = new LocationRequest();
-
-        // Sets the desired interval for active location updates. This interval is
-        // inexact. You may not receive updates at all if no location sources are available, or
-        // you may receive them slower than requested. You may also receive updates faster than
-        // requested if other applications are requesting location at a faster interval.
-        locationRequest.setInterval(LOCATION_UPDATE_INTERVAL_MILLIS);
-
-        // Sets the fastest rate for active location updates. This interval is exact, and your
-        // application will never receive updates faster than this value.
-        locationRequest.setFastestInterval(FASTEST_LOCATION_UPDATE_INTERVAL_MILLIS);
-
-        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-    }
-
-    /**
-     * Requests location updates from the FusedLocationApi.
-     */
-    void startLocationUpdates() {
-        // The final argument to {@code requestLocationUpdates()} is a LocationListener
-        // (http://developer.android.com/reference/com/google/android/gms/location/LocationListener.html).
-        LocationServices.FusedLocationApi.requestLocationUpdates(googleApiClient, locationRequest, this);
-        log.trace("Requesting GoogleApiClient location updates");
-    }
-
-    void stopLocationUpdates() {
-        if (googleApiClient.isConnected()) {
-            LocationServices.FusedLocationApi.removeLocationUpdates(googleApiClient, this);
-            log.trace("Stopped location updates");
+            // start service and bind to it.
+            log.trace("Start LoggingService and bind to it");
+            Intent serviceIntent = new Intent(MainActivity.this, LoggingService.class);
+            serviceIntent = new Intent(MainActivity.this, LoggingService.class);
+            serviceIntent.putExtra(SSID_FILTER_KEY, wifiFilterET.getText().toString());
+            startService(serviceIntent);
+            bindService(serviceIntent, mConnection, 0);
         } else {
-            log.warn("Attempted to stop location updates, but not connected");
-            onWarn();
+            // stop service
+            log.trace("Stop LoggingService");
+            loggingService.stopService();
         }
+        log.info((LoggingService.serviceRunning ? "En" : "Dis") + "abled logging to disk");
+        updateClient();
     }
 
-    @Override
-    public void onLocationChanged(Location location) {
-        dataLog.trace("Location: {}", location);
-        currentLocation = location;
-        lastLocationUpdateTime = new Date();
-        updateUI();
-    }
+
+
 
     @Override
     protected void onStart() {
         super.onStart();
         log.trace("onStart");
-        googleApiClient.connect();
-        log.trace("Connecting GoogleApiClient ...");
+
+        // bind to service, if it is running
+        if (LoggingService.serviceRunning){
+            Intent serviceIntent = new Intent(MainActivity.this, LoggingService.class);
+            log.trace("Bind to LoggingService");
+            bindService(serviceIntent, mConnection, 0);
+            updateClient();
+        }
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         log.trace("onResume");
-        if (googleApiClient.isConnected()) {
-            startLocationUpdates();
-        }
-
-        if (!loggingEnabled) {
-            this.registerReceiver(wifiBroadcastReceiver, wifiIntentFilter);
-            log.trace("Registered WifiBroadcastReceiver");
-            wifiManager.startScan();
-        }
     }
 
     @Override
     protected void onPause() {
         super.onPause();
         log.trace("onPause");
-
-        if (!loggingEnabled) {
-            this.unregisterReceiver(wifiBroadcastReceiver);
-            log.debug("Unregistered WifiBroadcastReceiver");
-            stopLocationUpdates();
-        } else {
-            log.debug("onPause called, but logging to file; we'll keep going");
-        }
     }
 
     @Override
@@ -323,9 +196,11 @@ public class MainActivity extends Activity implements
         super.onStop();
         log.trace("onStop");
 
-        if (!loggingEnabled) {
-            disconnectGoogleApiClient();
-        }
+        //unbind service
+        log.trace("Unbind from LoggingService");
+        loggingService.unregisterClient();
+        loggingService = null;
+        unbindService(mConnection);
 
         // save preferences or other persisting stuff
         SharedPreferences.Editor prefEditor = this.getPreferences(Context.MODE_PRIVATE).edit();
@@ -339,68 +214,11 @@ public class MainActivity extends Activity implements
         super.onDestroy();
         log.trace("onDestroy");
 
-        disconnectGoogleApiClient();
-
-        if (loggingEnabled) {
-            this.unregisterReceiver(wifiBroadcastReceiver);
-            log.trace("Unregistered WifiBroadcastReceiver");
-        }
-
         // assume SLF4J is bound to logback-classic in the current environment
         LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
         loggerContext.stop();
     }
 
-    private void disconnectGoogleApiClient() {
-        if (googleApiClient.isConnected()) {
-            googleApiClient.disconnect();
-            log.trace("GoogleApiClient disconnected");
-        }
-    }
-
-    /**
-     * Runs when a GoogleApiClient object successfully connects.
-     */
-    @Override
-    public void onConnected(Bundle connectionHint) {
-        log.info("Connected to GoogleApiClient");
-
-        if (currentLocation == null) {
-            currentLocation = LocationServices.FusedLocationApi.getLastLocation(googleApiClient);
-            lastLocationUpdateTime = new Date();
-            updateUI();
-        }
-
-        startLocationUpdates();
-    }
-
-    @Override
-    public void onConnectionFailed(ConnectionResult result) {
-        log.warn("GoogleApiClient connection failed: ConnectionResult.getErrorCode() = {}", result.getErrorCode());
-        onWarn();
-    }
-
-    @Override
-    public void onConnectionSuspended(int cause) {
-        log.info("GoogleApiClient connection suspended, attempting reconnect");
-        googleApiClient.connect();
-    }
-
-    /**
-     * Stores activity data in the Bundle.
-     */
-    @Override
-    public void onSaveInstanceState(@NonNull Bundle savedInstanceState) {
-        savedInstanceState.putParcelable(LOCATION_KEY, currentLocation);
-        if (lastLocationUpdateTime != null) {
-            savedInstanceState.putLong(LAST_LOCATION_UPDATE_TIME_STRING_KEY, lastLocationUpdateTime.getTime());
-        }
-        if (lastWifiScanTime != null) {
-            savedInstanceState.putLong(LAST_WIFI_SCAN_TIME_STRING_KEY, lastWifiScanTime.getTime());
-        }
-        savedInstanceState.putBoolean(LOGGING_ENABLED_KEY, loggingEnabled);
-        super.onSaveInstanceState(savedInstanceState);
-    }
 
     /**
      * Clears focus from EditText (the SSID filter).
@@ -418,7 +236,12 @@ public class MainActivity extends Activity implements
         Uploader.upload(this, "/sdcard/WifiLocationLogger/wifilog.csv");
     }
 
-    private void onWarn() {
+    @Override
+    public void updateClient() {
+        updateUI();
+    }
+
+    public void onWarn() {
         try {
             Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
             Ringtone r = RingtoneManager.getRingtone(getApplicationContext(), notification);
