@@ -21,7 +21,7 @@ import java.util.regex.PatternSyntaxException;
  * logs location (and accuracy) and Wifis (SSID, BSSID, strength) to disk
  */
 class WifiBroadcastReceiver extends BroadcastReceiver {
-    private final MainActivity m;
+    private final LoggingService loggingService;
 
     private final Comparator<ScanResult> RSSI_ORDER =
             new Comparator<ScanResult>() {
@@ -36,18 +36,18 @@ class WifiBroadcastReceiver extends BroadcastReceiver {
     private static final int NOT_SPECIAL = 0;
     private static final int SPECIAL_NO_VISIBLE_WIFI = 1;
 
-    public WifiBroadcastReceiver(MainActivity m) {
-        this.m = m;
+    public WifiBroadcastReceiver(LoggingService m) {
+        this.loggingService = m;
         wifiScanTimer = new Timer(WIFI_SCAN_TIMER);
     }
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        List<ScanResult> scanResultList = MainActivity.wifiManager.getScanResults();
-        m.lastWifiScanTime = new Date();
+        List<ScanResult> scanResultList = LoggingService.wifiManager.getScanResults();
+        loggingService.lastWifiScanTime = new Date();
 
         Collections.sort(scanResultList, RSSI_ORDER);
-        m.dataLog.trace("Wifis: {}", scanResultList);
+        loggingService.dataLog.trace("Wifis: {}", scanResultList);
 
         String combined = "";
         Pattern filter = makeFilter();
@@ -69,30 +69,30 @@ class WifiBroadcastReceiver extends BroadcastReceiver {
            log(null, SPECIAL_NO_VISIBLE_WIFI);
         }
 
-        m.wifiListString = combined;
-        m.updateUI();
+        loggingService.wifiListString = combined;
+        loggingService.updateClients();
 
         // schedule next scan after short delay
         wifiScanTimer.schedule(new TimerTask() {
                 @Override
                 public void run() {
-                    MainActivity.wifiManager.startScan();
+                    LoggingService.wifiManager.startScan();
                 }
-            }, MainActivity.WIFI_SCAN_DELAY_MILLIS);
+            }, LoggingService.WIFI_SCAN_DELAY_MILLIS);
     }
 
     private void log(ScanResult wifi, int specialCode) {
-        if (m.loggingEnabled) {
+        if (loggingService.loggingEnabled) {
             String csvLine =     MainActivity.LOG_FORMAT_VERSION
                          + "," + Build.MODEL
                          + "," + MainActivity.sessionId
-                         + "," + m.currentLocation.getLatitude()
-                         + "," + m.currentLocation.getLongitude()
-                         + "," + m.currentLocation.getAltitude()
-                         + "," + m.currentLocation.getAccuracy()
-                         + "," + m.currentLocation.getSpeed()
+                         + "," + loggingService.currentLocation.getLatitude()
+                         + "," + loggingService.currentLocation.getLongitude()
+                         + "," + loggingService.currentLocation.getAltitude()
+                         + "," + loggingService.currentLocation.getAccuracy()
+                         + "," + loggingService.currentLocation.getSpeed()
                          + "," + specialCode
-                         + "," + (m.lastLocationUpdateTime.getTime() - m.lastWifiScanTime.getTime());
+                         + "," + (loggingService.lastLocationUpdateTime.getTime() - loggingService.lastWifiScanTime.getTime());
 
             if (specialCode == NOT_SPECIAL) {
                 csvLine += "," + wifi.SSID // FIXME: escape commas
@@ -108,15 +108,15 @@ class WifiBroadcastReceiver extends BroadcastReceiver {
             // FIXME last in case it might contain messed up characters
             // this really needs to be escaped properly, same for SSID above
             // (which can apparently contain arbitrary characters - dear god...)
-            csvLine +=     "," + "'" + m.wifiFilterET.getText().toString() + "'";
+            csvLine +=     "," + "'" + loggingService.wifiFilter + "'";
 
-            m.diskLog.info(csvLine);
+            loggingService.diskLog.info(csvLine);
         }
     }
 
     private Pattern makeFilter() {
         // if not a valid regular expression or empty, don't filter at all
-        String regexp = m.wifiFilterET.getText().toString();
+        String regexp = loggingService.wifiFilter;
         if (regexp.equals("")) {
             regexp = ".*";
         }
